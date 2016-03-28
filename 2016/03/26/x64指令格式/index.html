@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>x64指令格式 | Hexo</title>
+  <title>x64指令格式 | 叶俊的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="引言看了两天的x86指令集，终于基本搞懂了x64的指令格式（只是x64哦，没有特别关注16位和32位时的格式），和RISC相比实在是太复杂了，难怪x86的功耗将不下来，光是译码器就不知道得做的多么复杂。
 x64指令格式x64指令共包括七个部分，即：
@@ -16,7 +16,7 @@ SIB（一个字节）">
 <meta property="og:type" content="article">
 <meta property="og:title" content="x64指令格式">
 <meta property="og:url" content="http://yoursite.com/2016/03/26/x64指令格式/index.html">
-<meta property="og:site_name" content="Hexo">
+<meta property="og:site_name" content="叶俊的博客">
 <meta property="og:description" content="引言看了两天的x86指令集，终于基本搞懂了x64的指令格式（只是x64哦，没有特别关注16位和32位时的格式），和RISC相比实在是太复杂了，难怪x86的功耗将不下来，光是译码器就不知道得做的多么复杂。
 x64指令格式x64指令共包括七个部分，即：
 
@@ -25,7 +25,7 @@ REX prefix（一个字节）
 opcode（一到三个字节）
 ModRM（一个字节）
 SIB（一个字节）">
-<meta property="og:updated_time" content="2016-03-27T05:31:39.688Z">
+<meta property="og:updated_time" content="2016-03-28T13:50:32.517Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="x64指令格式">
 <meta name="twitter:description" content="引言看了两天的x86指令集，终于基本搞懂了x64的指令格式（只是x64哦，没有特别关注16位和32位时的格式），和RISC相比实在是太复杂了，难怪x86的功耗将不下来，光是译码器就不知道得做的多么复杂。
@@ -37,7 +37,7 @@ opcode（一到三个字节）
 ModRM（一个字节）
 SIB（一个字节）">
   
-    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+    <link rel="alternate" href="/atom.xml" title="叶俊的博客" type="application/atom+xml">
   
   
     <link rel="icon" href="/favicon.png">
@@ -58,8 +58,12 @@ SIB（一个字节）">
   <div id="header-outer" class="outer">
     <div id="header-title" class="inner">
       <h1 id="logo-wrap">
-        <a href="/" id="logo">Hexo</a>
+        <a href="/" id="logo">叶俊的博客</a>
       </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">yejun.golden@163.com</a>
+        </h2>
       
     </div>
     <div id="header-inner" class="inner">
@@ -75,7 +79,7 @@ SIB（一个字节）">
         
           <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -173,9 +177,11 @@ SIB（一个字节）">
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/03/26/x64指令格式/" data-id="cima97k5b0004knkcf1pvahqw" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/03/26/x64指令格式/" data-id="cimc1qqov00049zkcnuze2zsy" class="article-share-link">Share</a>
       
       
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mili/">mili</a></li></ul>
+
     </footer>
   </div>
   
@@ -192,11 +198,6 @@ SIB（一个字节）">
     </a>
   
   
-    <a href="/2016/03/21/Hotspot内存管理技术/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Hotspot内存管理技术(一：原理)</div>
-    </a>
-  
 </nav>
 
   
@@ -211,9 +212,9 @@ SIB（一个字节）">
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
+    <h3 class="widget-title">标签</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/hotspot源码分析/">hotspot源码分析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jvm/">jvm</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/hotspot源码分析/">hotspot源码分析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mili/">mili</a></li></ul>
     </div>
   </div>
 
@@ -221,18 +222,18 @@ SIB（一个字节）">
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
+    <h3 class="widget-title">标签云</h3>
     <div class="widget tagcloud">
-      <a href="/tags/hotspot源码分析/" style="font-size: 20px;">hotspot源码分析</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a>
+      <a href="/tags/hotspot源码分析/" style="font-size: 20px;">hotspot源码分析</a> <a href="/tags/mili/" style="font-size: 10px;">mili</a>
     </div>
   </div>
 
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
+    <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a></li></ul>
     </div>
   </div>
 
@@ -240,9 +241,13 @@ SIB（一个字节）">
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
+    <h3 class="widget-title">最新文章</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2016/03/28/hotspot源码分析之内存管理技术二/">hotspot源码分析之内存管理技术二</a>
+          </li>
         
           <li>
             <a href="/2016/03/27/hotspot源码分析之内存管理技术一/">hotspot源码分析之内存管理技术一</a>
@@ -254,10 +259,6 @@ SIB（一个字节）">
         
           <li>
             <a href="/2016/03/26/x64指令格式/">x64指令格式</a>
-          </li>
-        
-          <li>
-            <a href="/2016/03/21/Hotspot内存管理技术/">Hotspot内存管理技术(一：原理)</a>
           </li>
         
       </ul>
@@ -272,7 +273,7 @@ SIB（一个字节）">
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2016 John Doe<br>
+      &copy; 2016 叶俊<br>
       Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>

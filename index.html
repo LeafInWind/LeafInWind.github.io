@@ -3,19 +3,19 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Hexo</title>
+  <title>叶俊的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
+<meta property="og:title" content="叶俊的博客">
 <meta property="og:url" content="http://yoursite.com/index.html">
-<meta property="og:site_name" content="Hexo">
+<meta property="og:site_name" content="叶俊的博客">
 <meta property="og:description">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Hexo">
+<meta name="twitter:title" content="叶俊的博客">
 <meta name="twitter:description">
   
-    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+    <link rel="alternate" href="/atom.xml" title="叶俊的博客" type="application/atom+xml">
   
   
     <link rel="icon" href="/favicon.png">
@@ -36,8 +36,12 @@
   <div id="header-outer" class="outer">
     <div id="header-title" class="inner">
       <h1 id="logo-wrap">
-        <a href="/" id="logo">Hexo</a>
+        <a href="/" id="logo">叶俊的博客</a>
       </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">yejun.golden@163.com</a>
+        </h2>
       
     </div>
     <div id="header-inner" class="inner">
@@ -53,7 +57,7 @@
         
           <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -63,6 +67,46 @@
 </header>
       <div class="outer">
         <section id="main">
+  
+    <article id="post-hotspot源码分析之内存管理技术二" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/28/hotspot源码分析之内存管理技术二/" class="article-date">
+  <time datetime="2016-03-28T13:40:49.000Z" itemprop="datePublished">2016-03-28</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/28/hotspot源码分析之内存管理技术二/">hotspot源码分析之内存管理技术二</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>c++程序比之java程序难用的根本原因就在于其使用的所有内存都需要自己管理<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  Obj* p = <span class="keyword">new</span> Obj();</span><br><span class="line">  <span class="keyword">delete</span> p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>但如上代码中…处如果发生异常导致foo函数非正常地提前退出，则<code>delete o</code>语句没有机会执行，从而导致Obj对象内存未回收，造成内存泄露</p>
+<h2 id="hotspot解决方案"><a href="#hotspot解决方案" class="headerlink" title="hotspot解决方案"></a>hotspot解决方案</h2>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2016/03/28/hotspot源码分析之内存管理技术二/" data-id="cimc1w00w0002bekcjjhx4ixn" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hotspot源码分析/">hotspot源码分析</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
   
     <article id="post-hotspot源码分析之内存管理技术一" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
@@ -98,7 +142,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/03/27/hotspot源码分析之内存管理技术一/" data-id="cima97k550001knkcrem52kay" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/03/27/hotspot源码分析之内存管理技术一/" data-id="cimc1qqom00019zkcs3vv9deo" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hotspot源码分析/">hotspot源码分析</a></li></ul>
@@ -156,7 +200,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/03/27/hotspot源码分析之小技巧/" data-id="cima97k5a0003knkciu7q57f5" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/03/27/hotspot源码分析之小技巧/" data-id="cimc1qqot00039zkcdi35j40k" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hotspot源码分析/">hotspot源码分析</a></li></ul>
@@ -257,48 +301,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/03/26/x64指令格式/" data-id="cima97k5b0004knkcf1pvahqw" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/03/26/x64指令格式/" data-id="cimc1qqov00049zkcnuze2zsy" class="article-share-link">Share</a>
       
       
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Hotspot内存管理技术" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/03/21/Hotspot内存管理技术/" class="article-date">
-  <time datetime="2016-03-21T13:51:49.000Z" itemprop="datePublished">2016-03-21</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/03/21/Hotspot内存管理技术/">Hotspot内存管理技术(一：原理)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>c++程序比之java程序难用的根本原因就在于其使用的所有内存都需要自己管理<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  Obj* p = <span class="keyword">new</span> Obj();</span><br><span class="line">  <span class="keyword">delete</span> p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>但如上代码中…处如果发生异常导致foo函数非正常地提前退出，则<code>delete o</code>语句没有机会执行，从而导致Obj对象内存未回收，造成内存泄露</p>
-<h2 id="解决方案1"><a href="#解决方案1" class="headerlink" title="解决方案1"></a>解决方案1</h2><h2 id="hotspot解决方案"><a href="#hotspot解决方案" class="headerlink" title="hotspot解决方案"></a>hotspot解决方案</h2>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/03/21/Hotspot内存管理技术/" data-id="cima97k4z0000knkc8fbky39l" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/jvm/">jvm</a></li></ul>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mili/">mili</a></li></ul>
 
     </footer>
   </div>
@@ -317,9 +323,9 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
+    <h3 class="widget-title">标签</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/hotspot源码分析/">hotspot源码分析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jvm/">jvm</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/hotspot源码分析/">hotspot源码分析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mili/">mili</a></li></ul>
     </div>
   </div>
 
@@ -327,18 +333,18 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
+    <h3 class="widget-title">标签云</h3>
     <div class="widget tagcloud">
-      <a href="/tags/hotspot源码分析/" style="font-size: 20px;">hotspot源码分析</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a>
+      <a href="/tags/hotspot源码分析/" style="font-size: 20px;">hotspot源码分析</a> <a href="/tags/mili/" style="font-size: 10px;">mili</a>
     </div>
   </div>
 
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
+    <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a></li></ul>
     </div>
   </div>
 
@@ -346,9 +352,13 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
+    <h3 class="widget-title">最新文章</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2016/03/28/hotspot源码分析之内存管理技术二/">hotspot源码分析之内存管理技术二</a>
+          </li>
         
           <li>
             <a href="/2016/03/27/hotspot源码分析之内存管理技术一/">hotspot源码分析之内存管理技术一</a>
@@ -360,10 +370,6 @@
         
           <li>
             <a href="/2016/03/26/x64指令格式/">x64指令格式</a>
-          </li>
-        
-          <li>
-            <a href="/2016/03/21/Hotspot内存管理技术/">Hotspot内存管理技术(一：原理)</a>
           </li>
         
       </ul>
@@ -378,7 +384,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2016 John Doe<br>
+      &copy; 2016 叶俊<br>
       Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>

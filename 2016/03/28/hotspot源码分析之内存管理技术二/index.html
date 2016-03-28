@@ -3,17 +3,24 @@
 <head>
   <meta charset="utf-8">
   
-  <title>归档 | 叶俊的博客</title>
+  <title>hotspot源码分析之内存管理技术二 | 叶俊的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description">
-<meta property="og:type" content="website">
-<meta property="og:title" content="叶俊的博客">
-<meta property="og:url" content="http://yoursite.com/archives/index.html">
+  <meta name="description" content="问题c++程序比之java程序难用的根本原因就在于其使用的所有内存都需要自己管理1234void foo() &amp;#123;  Obj* p = new Obj();  delete p;&amp;#125;
+但如上代码中…处如果发生异常导致foo函数非正常地提前退出，则delete o语句没有机会执行，从而导致Obj对象内存未回收，造成内存泄露
+hotspot解决方案">
+<meta property="og:type" content="article">
+<meta property="og:title" content="hotspot源码分析之内存管理技术二">
+<meta property="og:url" content="http://yoursite.com/2016/03/28/hotspot源码分析之内存管理技术二/index.html">
 <meta property="og:site_name" content="叶俊的博客">
-<meta property="og:description">
+<meta property="og:description" content="问题c++程序比之java程序难用的根本原因就在于其使用的所有内存都需要自己管理1234void foo() &amp;#123;  Obj* p = new Obj();  delete p;&amp;#125;
+但如上代码中…处如果发生异常导致foo函数非正常地提前退出，则delete o语句没有机会执行，从而导致Obj对象内存未回收，造成内存泄露
+hotspot解决方案">
+<meta property="og:updated_time" content="2016-03-28T13:49:18.049Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="叶俊的博客">
-<meta name="twitter:description">
+<meta name="twitter:title" content="hotspot源码分析之内存管理技术二">
+<meta name="twitter:description" content="问题c++程序比之java程序难用的根本原因就在于其使用的所有内存都需要自己管理1234void foo() &amp;#123;  Obj* p = new Obj();  delete p;&amp;#125;
+但如上代码中…处如果发生异常导致foo函数非正常地提前退出，则delete o语句没有机会执行，从而导致Obj对象内存未回收，造成内存泄露
+hotspot解决方案">
   
     <link rel="alternate" href="/atom.xml" title="叶俊的博客" type="application/atom+xml">
   
@@ -66,96 +73,55 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2016" class="archive-year">2016</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/03/28/hotspot源码分析之内存管理技术二/" class="archive-article-date">
-  <time datetime="2016-03-28T13:40:49.000Z" itemprop="datePublished">3月 28</time>
+        <section id="main"><article id="post-hotspot源码分析之内存管理技术二" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/28/hotspot源码分析之内存管理技术二/" class="article-date">
+  <time datetime="2016-03-28T13:40:49.000Z" itemprop="datePublished">2016-03-28</time>
 </a>
-      
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/03/28/hotspot源码分析之内存管理技术二/">hotspot源码分析之内存管理技术二</a>
+    <h1 class="article-title" itemprop="name">
+      hotspot源码分析之内存管理技术二
     </h1>
   
 
-    </header>
-  </div>
-</article>
-  
+      </header>
     
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/03/27/hotspot源码分析之内存管理技术一/" class="archive-article-date">
-  <time datetime="2016-03-27T06:35:01.000Z" itemprop="datePublished">3月 27</time>
-</a>
+    <div class="article-entry" itemprop="articleBody">
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/03/27/hotspot源码分析之内存管理技术一/">hotspot源码分析之内存管理技术一</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/03/27/hotspot源码分析之小技巧/" class="archive-article-date">
-  <time datetime="2016-03-27T03:36:53.000Z" itemprop="datePublished">3月 27</time>
-</a>
+        <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>c++程序比之java程序难用的根本原因就在于其使用的所有内存都需要自己管理<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  Obj* p = <span class="keyword">new</span> Obj();</span><br><span class="line">  <span class="keyword">delete</span> p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>但如上代码中…处如果发生异常导致foo函数非正常地提前退出，则<code>delete o</code>语句没有机会执行，从而导致Obj对象内存未回收，造成内存泄露</p>
+<h2 id="hotspot解决方案"><a href="#hotspot解决方案" class="headerlink" title="hotspot解决方案"></a>hotspot解决方案</h2>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/03/27/hotspot源码分析之小技巧/">hotspot源码分析之小技巧</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/03/26/x64指令格式/" class="archive-article-date">
-  <time datetime="2016-03-26T02:07:48.000Z" itemprop="datePublished">3月 26</time>
-</a>
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2016/03/28/hotspot源码分析之内存管理技术二/" data-id="cimc1w00w0002bekcjjhx4ixn" class="article-share-link">Share</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/03/26/x64指令格式/">x64指令格式</a>
-    </h1>
-  
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hotspot源码分析/">hotspot源码分析</a></li></ul>
 
-    </header>
+    </footer>
   </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2016/03/27/hotspot源码分析之内存管理技术一/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">hotspot源码分析之内存管理技术一</div>
+    </a>
+  
+</nav>
+
+  
 </article>
-  
-  
-    </div></section>
-  
 
 </section>
         
