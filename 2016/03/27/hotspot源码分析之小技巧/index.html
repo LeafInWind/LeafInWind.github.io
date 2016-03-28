@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>hotspot源码分析之小技巧 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="引言本文所指“小技巧”并非分析hotspot源码的小技巧，而是hotspot源码中使用到的开发技巧。
+一个表示寄存器的c++类如何用一个c++类来表示处理器中的寄存器。寄存器通常有一个编码（例如x64上rcx寄存器的编码就是001），还有获取其名字的方法name(例如rcx寄存器的名字就是rcx）。
+通常情况下，根据如上需求，我们很可能会写如下的代码：
+12345678class Register">
+<meta property="og:type" content="article">
+<meta property="og:title" content="hotspot源码分析之小技巧">
+<meta property="og:url" content="http://yoursite.com/2016/03/27/hotspot源码分析之小技巧/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="引言本文所指“小技巧”并非分析hotspot源码的小技巧，而是hotspot源码中使用到的开发技巧。
+一个表示寄存器的c++类如何用一个c++类来表示处理器中的寄存器。寄存器通常有一个编码（例如x64上rcx寄存器的编码就是001），还有获取其名字的方法name(例如rcx寄存器的名字就是rcx）。
+通常情况下，根据如上需求，我们很可能会写如下的代码：
+12345678class Register">
+<meta property="og:updated_time" content="2016-03-27T06:36:09.746Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="hotspot源码分析之小技巧">
+<meta name="twitter:description" content="引言本文所指“小技巧”并非分析hotspot源码的小技巧，而是hotspot源码中使用到的开发技巧。
+一个表示寄存器的c++类如何用一个c++类来表示处理器中的寄存器。寄存器通常有一个编码（例如x64上rcx寄存器的编码就是001），还有获取其名字的方法name(例如rcx寄存器的名字就是rcx）。
+通常情况下，根据如上需求，我们很可能会写如下的代码：
+12345678class Register">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-hotspot源码分析之小技巧" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/27/hotspot源码分析之小技巧/" class="article-date">
+  <time datetime="2016-03-27T03:36:53.000Z" itemprop="datePublished">2016-03-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      hotspot源码分析之小技巧
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>本文所指“小技巧”并非分析hotspot源码的小技巧，而是hotspot源码中使用到的开发技巧。</p>
+<h2 id="一个表示寄存器的c-类"><a href="#一个表示寄存器的c-类" class="headerlink" title="一个表示寄存器的c++类"></a>一个表示寄存器的c++类</h2><p>如何用一个c++类来表示处理器中的寄存器。寄存器通常有一个编码（例如x64上rcx寄存器的编码就是001），还有获取其名字的方法name(例如rcx寄存器的名字就是<code>rcx</code>）。</p>
+<p>通常情况下，根据如上需求，我们很可能会写如下的代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> Register &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  Register(<span class="keyword">int</span> encoding): _encoding(encoding) &#123;&#125;</span><br><span class="line">  <span class="function"><span class="keyword">int</span> <span class="title">encoding</span><span class="params">()</span> </span>&#123;<span class="keyword">return</span> _encoding;&#125;</span><br><span class="line">  <span class="function"><span class="keyword">const</span> <span class="keyword">char</span>* <span class="title">name</span><span class="params">()</span></span>;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="keyword">int</span> _encoding;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>然后写如下的代码创建及使用寄存器<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Register* rcx = <span class="keyword">new</span> Register(<span class="number">1</span>);</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"%s, %d"</span>, rcx-&gt;name(), rcx-&gt;encoding());</span><br></pre></td></tr></table></figure></p>
+<p>但hotspot却使用了一种让人很是费解的方法来定义和使用Register。</p>
+<h2 id="hotspot的Register实现"><a href="#hotspot的Register实现" class="headerlink" title="hotspot的Register实现"></a>hotspot的Register实现</h2><p>hotspot的Register定义大致如下：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> RegisterImpl* Register;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> RegisterImpl &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="function"><span class="keyword">int</span> <span class="title">encoding</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> (<span class="keyword">int</span>)<span class="keyword">this</span>; &#125;</span><br><span class="line">  <span class="function"><span class="keyword">const</span> <span class="keyword">char</span>* <span class="title">name</span><span class="params">()</span> <span class="keyword">const</span></span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">char</span>* RegisterImpl::name() <span class="keyword">const</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">char</span>* names[<span class="number">16</span>] = &#123;</span><br><span class="line">    <span class="string">"rax"</span>, <span class="string">"rcx"</span>, <span class="string">"rdx"</span>, <span class="string">"rbx"</span>, <span class="string">"rsp"</span>, <span class="string">"rbp"</span>, <span class="string">"rsi"</span>, <span class="string">"rdi"</span>,</span><br><span class="line">    <span class="string">"r8"</span>,  <span class="string">"r9"</span>,  <span class="string">"r10"</span>, <span class="string">"r11"</span>, <span class="string">"r12"</span>, <span class="string">"r13"</span>, <span class="string">"r14"</span>, <span class="string">"r15"</span></span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="keyword">return</span> names[encoding()];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>创建和使用寄存器的代码如下：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Register rcx = <span class="number">1</span>;</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"%s, %d"</span>, rcx-&gt;name(), rcx-&gt;encoding());</span><br></pre></td></tr></table></figure></p>
+<h2 id="hotspot源码分析"><a href="#hotspot源码分析" class="headerlink" title="hotspot源码分析"></a>hotspot源码分析</h2><p>hotspot源码让人费解的地方主要有三处：</p>
+<ul>
+<li>首先是其<code>RegisterImpl</code>定义中竟然没有任何字段，其<code>encoding()</code>方法只是简单地返回了<code>this</code>指针。</li>
+<li>其次是使用Register时竟然出现了<code>Register rcx = 1；</code>这样的代码，既然Register是一个RegisterImpl指针，怎么能把一个int值直接赋给一个指针呢？</li>
+<li>最后就是既然<code>rcx</code>就是<code>1</code>，为什么还能有<code>rcx-&gt;name()</code>这样的调用呢？</li>
+</ul>
+<p>其实，问题的关键就是<code>rcx</code>作为一个值为<code>1</code>的指针怎么能对其调用<code>name</code>方法，按照《深入探索c++对象模型》一书的介绍，<code>rcx-&gt;name()</code>这样的调用要先通过<code>rcx</code>指针找到<code>RegisterImpl</code>类的虚表，然后在虚表中查找<code>name</code>方法，最后再以<code>rcx</code>为参数调用该方法。现在既然<code>rcx</code>为<code>1</code>，那么查找虚表的过程肯定会引发段为例错误啊！</p>
+<p>通过查看调用过程的汇编代码，发现并没有基于<code>rcx</code>指针的虚表查找过程。原来，上述查虚表的过程针对的仅仅是<code>c++</code>的虚方法，而<code>name</code>并不是虚方法，因此不需要这个过程，针对<code>name</code>的调用是编译时静态绑定的，<code>rcx</code>作为一个指针，它在<code>name</code>调用中的意义仅仅是作为该调用的第一个参数（这是<code>c++</code>的规则），因此，调用<code>rcx-&gt;name()</code>其实就是调用<code>RegisterImpl::name(1)</code>，该调用可以正确的返回<code>“rcx”</code>。</p>
+<p>同样的道理，也就不难理解<code>encoding</code>方法的实现了。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>hotspot的Register实现方法其实给那些<strong>只需要一个字段的且不需要虚方法</strong>的类提供了一种新的实现方法，即直接使用隐含的<code>this</code>指针作为数据字段，而不再显示地去定义一个数据字段。使用这种类的方法是直接对类指针赋值，然后调用其方法，唯一限制是不能调用虚方法。此外，直接给指针赋值避免了一次构造函数的调用开销，因此代码虽然让人费解，但更加高效。</p>
+<p>hotspot源码中大量使用了上述技巧，例如<code>VMReg</code>、<code>NativeCall</code>、….。</p>
+<p>相信我们自己在今后的大型工程开发过程中也可以有意识地使用上述技巧。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2016/03/27/hotspot源码分析之小技巧/" data-id="cima97k5a0003knkciu7q57f5" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hotspot源码分析/">hotspot源码分析</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/03/27/hotspot源码分析之内存管理技术一/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          hotspot源码分析之内存管理技术一
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/03/26/x64指令格式/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">x64指令格式</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/hotspot源码分析/">hotspot源码分析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jvm/">jvm</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/hotspot源码分析/" style="font-size: 20px;">hotspot源码分析</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/03/27/hotspot源码分析之内存管理技术一/">hotspot源码分析之内存管理技术一</a>
+          </li>
+        
+          <li>
+            <a href="/2016/03/27/hotspot源码分析之小技巧/">hotspot源码分析之小技巧</a>
+          </li>
+        
+          <li>
+            <a href="/2016/03/26/x64指令格式/">x64指令格式</a>
+          </li>
+        
+          <li>
+            <a href="/2016/03/21/Hotspot内存管理技术/">Hotspot内存管理技术(一：原理)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
