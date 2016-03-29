@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>hotspot源码分析之内存管理技术二 | 叶俊的博客</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="引言使用c++开发应用的一个难点就是内存管理，例如如下代码
+12345void f() &amp;#123;  Resource* pRes = new Resource();  ...  delete pRes;&amp;#125;
+以上方法首先在heap上创建了一个Resource对象，然后在...中通过pRes指针操作该对象，最后方法返回前通过delete语句从heap上删除对象，回收相应的内存，从而避免了">
+<meta property="og:type" content="article">
+<meta property="og:title" content="hotspot源码分析之内存管理技术二">
+<meta property="og:url" content="http://yoursite.com/2016/03/21/hotspot源码分析之内存管理技术二/index.html">
+<meta property="og:site_name" content="叶俊的博客">
+<meta property="og:description" content="引言使用c++开发应用的一个难点就是内存管理，例如如下代码
+12345void f() &amp;#123;  Resource* pRes = new Resource();  ...  delete pRes;&amp;#125;
+以上方法首先在heap上创建了一个Resource对象，然后在...中通过pRes指针操作该对象，最后方法返回前通过delete语句从heap上删除对象，回收相应的内存，从而避免了">
+<meta property="og:updated_time" content="2016-03-29T09:32:44.688Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="hotspot源码分析之内存管理技术二">
+<meta name="twitter:description" content="引言使用c++开发应用的一个难点就是内存管理，例如如下代码
+12345void f() &amp;#123;  Resource* pRes = new Resource();  ...  delete pRes;&amp;#125;
+以上方法首先在heap上创建了一个Resource对象，然后在...中通过pRes指针操作该对象，最后方法返回前通过delete语句从heap上删除对象，回收相应的内存，从而避免了">
+  
+    <link rel="alternate" href="/atom.xml" title="叶俊的博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">叶俊的博客</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">yejun.golden@163.com</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-hotspot源码分析之内存管理技术二" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/21/hotspot源码分析之内存管理技术二/" class="article-date">
+  <time datetime="2016-03-21T13:51:49.000Z" itemprop="datePublished">2016-03-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      hotspot源码分析之内存管理技术二
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>使用c++开发应用的一个难点就是内存管理，例如如下代码</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  Resource* pRes = <span class="keyword">new</span> Resource();</span><br><span class="line">  ...</span><br><span class="line">  <span class="keyword">delete</span> pRes;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上方法首先在heap上创建了一个<code>Resource</code>对象，然后在<code>...</code>中通过<code>pRes</code>指针操作该对象，最后方法返回前通过<code>delete</code>语句从heap上删除对象，回收相应的内存，从而避免了内存泄露。</p>
+<p>但如果<code>...</code>中有一个过早的<code>return</code>语句，或者不小心抛出了异常，那么程序的控制流都有可能无法触及<code>delete</code>语句，从而造成内存泄露。你可能会说我会小心编码，避免上述情况。但是天知道啊，万一某个时刻你“不小心”了呢，或者将来这份代码落到了别人手里，他还没有理解你的意图就开始修改了呢，又或者你调用的某个方法之前不会抛出异常但是将来却会了呢。</p>
+<p>总之，如上的内存管理方案并不稳妥，通常更为稳妥的方案是将指针放入一个管理对象中，然后在该管理对象的析构函数中调用<code>delete</code>语句，具体可以参考文献1。本文介绍hotspot的内存管理方案的原理。</p>
+<h2 id="hotspot内存管理原理"><a href="#hotspot内存管理原理" class="headerlink" title="hotspot内存管理原理"></a>hotspot内存管理原理</h2><p>hotspot使用了一种我称为<strong>集中式</strong>的内存管理方案。它首先定义了一个<code>Arena</code>类，用于集中式的分配和回收内存，如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> Arena &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="keyword">enum</span> &#123;arena_size = <span class="number">0x1000</span>&#125;;</span><br><span class="line">  Arena() &#123;</span><br><span class="line">    _bottom = <span class="keyword">static_cast</span>&lt;<span class="keyword">char</span>*&gt; (<span class="built_in">malloc</span>(arena_size));</span><br><span class="line">    _max = _bottom + arena_size;</span><br><span class="line">    _hwm = _bottom;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"allocating from "</span> &lt;&lt; hex </span><br><span class="line">         &lt;&lt; <span class="keyword">reinterpret_cast</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">long</span>&gt;(_bottom) </span><br><span class="line">         &lt;&lt; <span class="string">" to "</span> &lt;&lt; <span class="keyword">reinterpret_cast</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">long</span>&gt;(_max) </span><br><span class="line">         &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  ~Arena() &#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"freeing memory at 0x"</span> </span><br><span class="line">         &lt;&lt; hex &lt;&lt; <span class="keyword">reinterpret_cast</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">long</span>&gt;(_bottom) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">free</span>(_bottom);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">char</span>* <span class="title">hwm</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123;<span class="keyword">return</span> _hwm;&#125;</span><br><span class="line">  <span class="function"><span class="keyword">void</span>* <span class="title">Amalloc</span><span class="params">(size_t x)</span> </span>&#123;<span class="comment">// fast allocate</span></span><br><span class="line">    x = (x + <span class="number">8</span> - <span class="number">1</span>) &amp; ((<span class="keyword">unsigned</span>)(<span class="number">-8</span>));<span class="comment">// alignment</span></span><br><span class="line">    <span class="keyword">if</span> (_hwm + x &gt; _max) &#123;</span><br><span class="line">      <span class="built_in">cerr</span> &lt;&lt; <span class="string">"out of memory"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">      <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">void</span>* ret = _hwm;</span><br><span class="line">    _hwm += x;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">  &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="keyword">char</span> *_hwm, *_max, *_bottom; <span class="comment">// High water mark</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>然后定义一个基类<code>ResoucreObj</code>，通过重载<code>operator new</code>让其对象分配在<code>arena</code>上。如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> ResoucreObj &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="function"><span class="keyword">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(size_t sz, Arena* arena)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"allocating "</span> &lt;&lt; sz &lt;&lt; <span class="string">" bytes at 0x"</span> </span><br><span class="line">         &lt;&lt; <span class="keyword">reinterpret_cast</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">long</span>&gt;(arena-&gt;hwm()) &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">void</span>* res = arena-&gt;Amalloc(sz);</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>最后让所有的类都从<code>ResoucreObj</code>派生。例如</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> ResA : <span class="keyword">public</span> ResoucreObj&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  ResA(<span class="keyword">int</span> f1, <span class="keyword">int</span> f2) &#123; _af1 = f1; _af2 = f2;&#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="keyword">int</span> _af1, _af2;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">class</span> ResB : <span class="keyword">public</span> ResoucreObj&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  ResB(<span class="keyword">int</span> f1) &#123;_bf1 = f1;&#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="keyword">int</span> _bf1;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>现在就可以用<code>new</code>的方式创建<code>ResA</code>和<code>ResB</code>的对象，然后方便的使用返回的指针，而不需要在程序离开前记得<code>delete</code>这些指针了，因为内存在<code>arena</code>析构时被集中回收。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  Arena a;</span><br><span class="line">  ResA* ra = <span class="keyword">new</span>(&amp;a) ResA(<span class="number">1</span>, <span class="number">2</span>);</span><br><span class="line">  ResB* rb = <span class="keyword">new</span>(&amp;a) ResB(<span class="number">3</span>);</span><br><span class="line">  ResA* ra2 = <span class="keyword">new</span>(&amp;a) ResA(<span class="number">1</span>, <span class="number">2</span>);</span><br><span class="line">  ResB* rb2 = <span class="keyword">new</span>(&amp;a) ResB(<span class="number">3</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行程序，输出如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">allocating from <span class="number">21</span>c1010 to <span class="number">21</span>c2010</span><br><span class="line">allocating <span class="number">8</span> bytes at <span class="number">0x21c1010</span></span><br><span class="line">allocating <span class="number">4</span> bytes at <span class="number">0x21c1018</span></span><br><span class="line">allocating <span class="number">8</span> bytes at <span class="number">0x21c1020</span></span><br><span class="line">allocating <span class="number">4</span> bytes at <span class="number">0x21c1028</span></span><br><span class="line">freeing memory at <span class="number">0x21c1010</span></span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>总结一下，hotspot的内存管理方案具有如下优点：</p>
+<ul>
+<li>管理方便，不需要特意delete</li>
+<li>内存分配迅速高效</li>
+</ul>
+<p>一个问题是hotspot为什么不使用智能指针呢，例如<code>stl</code>库中的<code>shared_ptr</code>？</p>
+<p>我认为原因首先是hotspot的开发始于上世纪90年代，当时的c++还没有标准模板库stl，因此也不可能使用<code>shared_ptr</code>这样的智能指针。但相信即使当时就有stl，hotspot也不会使用，因为虚拟机这样的应用通常都倾向于自己掌握内存的管理权而不是交给stl这样的第三方代码管理，google的V8引擎开发于本世纪初就同样没有使用stl。</p>
+<p>另外还需要说明一点就是如果在<code>ResoucreObj</code>的派生类中出现了<code>operator new</code>的任何形式的重载，那么<code>ResoucreObj</code>的<code>operator new</code>将不可见。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
+<li>effective c++，item13</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2016/03/21/hotspot源码分析之内存管理技术二/" data-id="cimd890xr0001bzkcm1f158e3" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hotspot源码分析/">hotspot源码分析</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/03/26/x64指令格式/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          x64指令格式
+        
+      </div>
+    </a>
+  
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/hotspot源码分析/">hotspot源码分析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mili/">mili</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/hotspot源码分析/" style="font-size: 20px;">hotspot源码分析</a> <a href="/tags/mili/" style="font-size: 10px;">mili</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/03/27/hotspot源码分析之内存管理技术一/">hotspot源码分析之内存管理技术一</a>
+          </li>
+        
+          <li>
+            <a href="/2016/03/27/hotspot源码分析之小技巧/">hotspot源码分析之小技巧</a>
+          </li>
+        
+          <li>
+            <a href="/2016/03/26/x64指令格式/">x64指令格式</a>
+          </li>
+        
+          <li>
+            <a href="/2016/03/21/hotspot源码分析之内存管理技术二/">hotspot源码分析之内存管理技术二</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 叶俊<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
