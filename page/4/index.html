@@ -4,24 +4,17 @@
 <head>
   <meta charset="utf-8">
   
-  <title>hotspot源码分析之内存管理技术二 | 叶俊的博客</title>
+  <title>叶俊的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="引言使用c++开发应用的一个难点就是内存管理，例如如下代码
-12345void f() &amp;#123;  Resource* pRes = new Resource();  ...  delete pRes;&amp;#125;
-以上方法首先在heap上创建了一个Resource对象，然后在...中通过pRes指针操作该对象，最后方法返回前通过delete语句从heap上删除对象，回收相应的内存，从而避免了">
-<meta property="og:type" content="article">
-<meta property="og:title" content="hotspot源码分析之内存管理技术二">
-<meta property="og:url" content="http://yoursite.com/2016/03/21/hotspot源码分析之内存管理技术二/index.html">
+  <meta name="description">
+<meta property="og:type" content="website">
+<meta property="og:title" content="叶俊的博客">
+<meta property="og:url" content="http://yoursite.com/page/4/index.html">
 <meta property="og:site_name" content="叶俊的博客">
-<meta property="og:description" content="引言使用c++开发应用的一个难点就是内存管理，例如如下代码
-12345void f() &amp;#123;  Resource* pRes = new Resource();  ...  delete pRes;&amp;#125;
-以上方法首先在heap上创建了一个Resource对象，然后在...中通过pRes指针操作该对象，最后方法返回前通过delete语句从heap上删除对象，回收相应的内存，从而避免了">
-<meta property="og:updated_time" content="2016-04-07T03:30:18.116Z">
+<meta property="og:description">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="hotspot源码分析之内存管理技术二">
-<meta name="twitter:description" content="引言使用c++开发应用的一个难点就是内存管理，例如如下代码
-12345void f() &amp;#123;  Resource* pRes = new Resource();  ...  delete pRes;&amp;#125;
-以上方法首先在heap上创建了一个Resource对象，然后在...中通过pRes指针操作该对象，最后方法返回前通过delete语句从heap上删除对象，回收相应的内存，从而避免了">
+<meta name="twitter:title" content="叶俊的博客">
+<meta name="twitter:description">
   
     <link rel="alternative" href="/atom.xml" title="叶俊的博客" type="application/atom+xml">
   
@@ -78,7 +71,9 @@
   </div>
 </header>
     <div class="outer">
-      <section id="main"><article id="post-hotspot源码分析之内存管理技术二" class="article article-type-post" itemscope itemprop="blogPost">
+      <section id="main">
+  
+    <article id="post-hotspot源码分析之内存管理技术二" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/03/21/hotspot源码分析之内存管理技术二/" class="article-date">
   <time datetime="2016-03-21T13:51:49.000Z" itemprop="datePublished">2016-03-21</time>
@@ -91,8 +86,8 @@
       <header class="article-header">
         
   
-    <h1 class="article-title" itemprop="name">
-      hotspot源码分析之内存管理技术二
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/21/hotspot源码分析之内存管理技术二/">hotspot源码分析之内存管理技术二</a>
     </h1>
   
 
@@ -177,28 +172,15 @@
     </footer>
   </div>
   
-    
-<nav id="article-nav">
-  
-    <a href="/2016/03/26/x64指令格式/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">下一篇</strong>
-      <div class="article-nav-title">
-        
-          x64指令格式
-        
-      </div>
-    </a>
-  
-  
-</nav>
-
-  
 </article>
 
 
-  <section id="comments">
-    <div id="ds-thread" class="ds-thread" data-thread-key="2016/03/21/hotspot源码分析之内存管理技术二/" data-title="hotspot源码分析之内存管理技术二" data-url="http://yoursite.com/2016/03/21/hotspot源码分析之内存管理技术二/"></div>
-  </section>
+  
+  
+    <nav id="page-nav">
+      <a class="extend prev" rel="prev" href="/page/3/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span>
+    </nav>
+  
 </section>
       
       <aside id="sidebar">
