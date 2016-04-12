@@ -73,6 +73,87 @@
     <div class="outer">
       <section id="main">
   
+    <article id="post-operator-new-重载" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/04/12/operator-new-重载/" class="article-date">
+  <time datetime="2016-04-12T12:39:47.000Z" itemprop="datePublished">2016-04-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/04/12/operator-new-重载/">operator new 重载</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>Hotspot VM的大量类都重载了<code>operator new</code>，因此本文特别介绍<code>operator new</code>的相关语法及意义。<code>operator new</code>在hotspot中的具体使用见笔者的其他文章。</p>
+<h2 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h2><p>C++允许应用程序在全局作用域内定义自己的<code>operator new</code>，或者也可以将它们定义为类成员函数。后者<a href="http://github.com/leafinwind/hotspot-study/blob/master/main7.cpp" target="_blank" rel="external">示例如下</a>：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> ResoucreObj &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  ResoucreObj(<span class="keyword">int</span> f) : _f(f) &#123;&#125;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(size_t sz)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">void</span>* res = theArena.Amalloc(sz);</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(size_t sz, Arena* arena)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">void</span>* res = arena-&gt;Amalloc(sz);</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">  &#125;</span><br><span class="line"><span class="keyword">private</span> :</span><br><span class="line">  <span class="keyword">int</span> _f;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>C++要求<code>operator new</code>函数重载的第一个参数必须是<code>size_t</code>，且第二个参数不能为<code>void*</code>：</p>
+<ul>
+<li>第一个参数表示将分配的对象的尺寸，该尺寸由编译器根据类的定义计算得到并传递给<code>operator new</code>方法。</li>
+<li>第二个参数不能为<code>void*</code>是因为<code>operator new(size_t, void*)</code>是一个不可以被覆盖的库函数，该函数将对象直接分配在<code>void*</code>指定的位置。</li>
+</ul>
+<p>如上代码，类<code>ResoucreObj</code>定义了两个版本的<code>operator new</code>。第一个版本的调用语句如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ResoucreObj *p1 = <span class="keyword">new</span> ResoucreObj(<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+<p>第二个版本的调用语句如下。这样的语句称为placement new语句。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Arena a;</span><br><span class="line">ResoucreObj *p2 = <span class="keyword">new</span>(&amp;a) ResoucreObj(<span class="number">2</span>);</span><br></pre></td></tr></table></figure>
+<h2 id="operator-new的意义"><a href="#operator-new的意义" class="headerlink" title="operator new的意义"></a><code>operator new</code>的意义</h2><p>以<code>new</code>运算符创建对象，如下</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Obj *pObj = <span class="keyword">new</span> Obj();</span><br></pre></td></tr></table></figure>
+<p>上述代码在运行时实际执行了三个步骤：</p>
+<ul>
+<li>第一步调用一个名为<code>operator new</code>的函数，为<code>Obj</code>对象分配一块足够大的且未初始化的空间；</li>
+<li>第二步调用<code>Obj</code>类的构造函数，初始化上述空间；</li>
+<li>第三步将上述空间的首地址返回给指针<code>pObj</code>。</li>
+</ul>
+<p>其中第一步调用的<code>operator new</code>函数，即可以是标准库的，也可以是我们自己定义的全局作用域的，还可以是类成员，具体是哪一个由编译器决定，次序如下：</p>
+<ol>
+<li>如果<code>new</code>的是一个类，那么编译器首先在该类中查找是否重载了<code>operator new</code></li>
+<li>没有的话则依次查找其基类</li>
+<li>再没有则查找全局作用域</li>
+<li>都没有的情况下才调用标准库</li>
+</ol>
+<h2 id="一个问题"><a href="#一个问题" class="headerlink" title="一个问题"></a>一个问题</h2><p>假设有<a href="http://github.com/leafinwind/hotspot-study/blob/master/main8.cpp" target="_blank" rel="external">如下代码</a>：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> addr[<span class="number">10</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> Base &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="function"><span class="keyword">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(size_t sz, <span class="keyword">int</span> i)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;addr[i];</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> Derived : <span class="keyword">public</span> Base &#123;</span><br><span class="line"><span class="keyword">public</span> :</span><br><span class="line">  <span class="function"><span class="keyword">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(size_t sz, <span class="keyword">int</span> i, <span class="keyword">int</span> j)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> &amp;addr[i + j];</span><br><span class="line">  &#125;  </span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>如果以<code>Base *p1 = new Base();</code>创建<code>Base</code>，编译不通过，提示必须使用两参数版本的<code>operator new</code>。</li>
+<li>如果以<code>Derived *p3 = new Derived(2);</code>创建<code>Derived</code>，编译不通过，提示必须使用三参数版本的<code>operator new</code>。</li>
+</ul>
+<p>因此得出如下结论：</p>
+<blockquote>
+<p>一个类一旦重载了<code>operator new</code>方法，那么编译器就只能使用该类中重载那些的<code>operator new</code>方法，即使<code>new</code>语句的参数不匹配，也不会再到基类、全局域以及库中查找匹配的方法</p>
+</blockquote>
+
+      
+    </div>
+    <footer class="article-footer">
+      
+        <a data-url="http://yoursite.com/2016/04/12/operator-new-重载/" data-id="cimxfgve100048hkc6a5v8i4z" class="article-share-link" data-share="baidu" data-title="operator new 重载">分享到</a>
+      
+
+      
+        <a href="http://yoursite.com/2016/04/12/operator-new-重载/#ds-thread" class="article-comment-link">评论</a>
+      
+
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mili/">mili</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-hotspot源码分析之内存管理技术一" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/03/27/hotspot源码分析之内存管理技术一/" class="article-date">
@@ -126,7 +207,7 @@
     </div>
     <footer class="article-footer">
       
-        <a data-url="http://yoursite.com/2016/03/27/hotspot源码分析之内存管理技术一/" data-id="cimw2vx310000n5kc9lgs0xxo" class="article-share-link" data-share="baidu" data-title="hotspot源码分析之内存管理技术一">分享到</a>
+        <a data-url="http://yoursite.com/2016/03/27/hotspot源码分析之内存管理技术一/" data-id="cimxfgvdn00008hkcu2usp9n2" class="article-share-link" data-share="baidu" data-title="hotspot源码分析之内存管理技术一">分享到</a>
       
 
       
@@ -190,7 +271,7 @@
     </div>
     <footer class="article-footer">
       
-        <a data-url="http://yoursite.com/2016/03/27/hotspot源码分析之小技巧/" data-id="cimw2vx3e0003n5kcelmslovj" class="article-share-link" data-share="baidu" data-title="hotspot源码分析之小技巧">分享到</a>
+        <a data-url="http://yoursite.com/2016/03/27/hotspot源码分析之小技巧/" data-id="cimxfgvdz00038hkc2zyv1b5y" class="article-share-link" data-share="baidu" data-title="hotspot源码分析之小技巧">分享到</a>
       
 
       
@@ -297,7 +378,7 @@
     </div>
     <footer class="article-footer">
       
-        <a data-url="http://yoursite.com/2016/03/26/x64指令格式/" data-id="cimw2vx3f0004n5kcm61a71ck" class="article-share-link" data-share="baidu" data-title="x64指令格式">分享到</a>
+        <a data-url="http://yoursite.com/2016/03/26/x64指令格式/" data-id="cimxfgve200068hkc3i27pef3" class="article-share-link" data-share="baidu" data-title="x64指令格式">分享到</a>
       
 
       
@@ -400,7 +481,7 @@
     </div>
     <footer class="article-footer">
       
-        <a data-url="http://yoursite.com/2016/03/21/hotspot源码分析之内存管理技术二/" data-id="cimw2vx370001n5kc67d060cz" class="article-share-link" data-share="baidu" data-title="hotspot源码分析之内存管理技术二">分享到</a>
+        <a data-url="http://yoursite.com/2016/03/21/hotspot源码分析之内存管理技术二/" data-id="cimxfgvdt00018hkc0iageeq9" class="article-share-link" data-share="baidu" data-title="hotspot源码分析之内存管理技术二">分享到</a>
       
 
       
@@ -428,7 +509,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/hotspot源码分析/">hotspot源码分析</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mili/">mili</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/hotspot源码分析/">hotspot源码分析</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mili/">mili</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -446,7 +527,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">4</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -456,6 +537,10 @@
     <h3 class="widget-title">近期文章</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2016/04/12/operator-new-重载/">operator new 重载</a>
+          </li>
         
           <li>
             <a href="/2016/03/27/hotspot源码分析之内存管理技术一/">hotspot源码分析之内存管理技术一</a>
