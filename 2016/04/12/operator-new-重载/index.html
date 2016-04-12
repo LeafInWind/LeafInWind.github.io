@@ -16,7 +16,7 @@
 <meta property="og:description" content="引言Hotspot VM的大量类都重载了operator new，因此本文特别介绍operator new的相关语法及意义。operator new在hotspot中的具体使用见笔者的其他文章。
 语法C++允许应用程序在全局作用域内定义自己的operator new，或者也可以将它们定义为类成员函数。后者示例如下：
 12345678910111213141516class ResoucreObj">
-<meta property="og:updated_time" content="2016-04-12T13:09:53.381Z">
+<meta property="og:updated_time" content="2016-04-12T13:15:04.381Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="operator new 重载">
 <meta name="twitter:description" content="引言Hotspot VM的大量类都重载了operator new，因此本文特别介绍operator new的相关语法及意义。operator new在hotspot中的具体使用见笔者的其他文章。
@@ -112,7 +112,7 @@
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ResoucreObj *p1 = <span class="keyword">new</span> ResoucreObj(<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
 <p>第二个版本的调用语句如下。这样的语句称为placement new语句。</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Arena a;</span><br><span class="line">ResoucreObj *p2 = <span class="keyword">new</span>(&amp;a) ResoucreObj(<span class="number">2</span>);</span><br></pre></td></tr></table></figure>
-<h2 id="重载operator-new的意义"><a href="#重载operator-new的意义" class="headerlink" title="重载operator new的意义"></a>重载<code>operator new</code>的意义</h2><p>以<code>new</code>运算符创建对象，如下代码</p>
+<h2 id="重载operator-new的意义"><a href="#重载operator-new的意义" class="headerlink" title="重载operator new的意义"></a>重载<code>operator new</code>的意义</h2><p>以<code>new</code>运算符创建对象，如下</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Obj *pObj = <span class="keyword">new</span> Obj();</span><br></pre></td></tr></table></figure>
 <p>上述代码在运行时实际执行了三个步骤：</p>
 <ul>
@@ -142,7 +142,7 @@
     </div>
     <footer class="article-footer">
       
-        <a data-url="http://yoursite.com/2016/04/12/operator-new-重载/" data-id="cimxg3st30003p5kc8on6dnu4" class="article-share-link" data-share="baidu" data-title="operator new 重载">分享到</a>
+        <a data-url="http://yoursite.com/2016/04/12/operator-new-重载/" data-id="cimxg8t700003rwkc0y2wa8zs" class="article-share-link" data-share="baidu" data-title="operator new 重载">分享到</a>
       
 
       
